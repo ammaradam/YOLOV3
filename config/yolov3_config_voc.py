@@ -1,14 +1,11 @@
 # coding=utf-8
 # project
-DATA_PATH = "/home/leon/data/data/VOC"
-PROJECT_PATH = "/home/leon/doc/code/python_code/YOLOV3"
+DATA_PATH = "C:/Users/Muhammad.Ammar/Desktop/Ammar/YOLOV3/data"
+PROJECT_PATH = "C:/Users/Muhammad.Ammar/Desktop/Ammar/YOLOV3"
 
 
-DATA = {"CLASSES":['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
-           'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse',
-           'motorbike', 'person', 'pottedplant', 'sheep', 'sofa',
-           'train', 'tvmonitor'],
-        "NUM":20}
+DATA = {"CLASSES":['IC'],
+        "NUM":1}
 
 # model
 MODEL = {"ANCHORS":[[(1.25, 1.625), (2.0, 3.75), (4.125, 2.875)],  # Anchors for small obj
@@ -20,9 +17,9 @@ MODEL = {"ANCHORS":[[(1.25, 1.625), (2.0, 3.75), (4.125, 2.875)],  # Anchors for
 
 # train
 TRAIN = {
-         "TRAIN_IMG_SIZE":448,
+         "TRAIN_IMG_SIZE":416,
          "AUGMENT":True,
-         "BATCH_SIZE":8,
+         "BATCH_SIZE":2,
          "MULTI_SCALE_TRAIN":True,
          "IOU_THRESHOLD_LOSS":0.5,
          "EPOCHS":50,

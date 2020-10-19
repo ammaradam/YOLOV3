@@ -3,6 +3,7 @@ weight
 data
 model/runs
 .idea
+sample
 
 # file
 results.txt

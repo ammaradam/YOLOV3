@@ -11,7 +11,8 @@ import numpy as np
 
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
-    tree = ET.parse(filename)
+    data_path = "C:/Users/Muhammad.Ammar/Desktop/Ammar/YOLOV3/data"
+    tree = ET.parse(os.path.join(data_path,filename))
     objects = []
     for obj in tree.findall('object'):
         obj_struct = {}
@@ -98,9 +99,13 @@ def voc_eval(detpath,
         os.mkdir(cachedir)
     cachefile = os.path.join(cachedir, 'annots.pkl')
     # read list of images
-    with open(imagesetfile, 'r') as f:
-        lines = f.readlines()
-    imagenames = [x.strip() for x in lines]
+    # with open(imagesetfile, 'r') as f:
+    #     lines = f.readlines()
+    # imagenames = [x.strip() for x in lines]
+
+    data_path = "C:/Users/Muhammad.Ammar/Desktop/Ammar/YOLOV3/data"
+    imagenames = [os.path.splitext(f)[0] for f in os.listdir(data_path) if f.endswith('.jpg')]
+
 
     if not os.path.isfile(cachefile):
         # load annots

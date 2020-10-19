@@ -52,7 +52,8 @@ class Tester(object):
 
     def test(self):
         if self.__visiual:
-            imgs = os.listdir(self.__visiual)
+            # imgs = os.listdir(self.__visiual)
+            imgs = [f for f in os.listdir(self.__visiual) if f.endswith('.jpg')]
             for v in imgs:
                 path = os.path.join(self.__visiual, v)
                 print("test images : {}".format(path))
@@ -67,7 +68,7 @@ class Tester(object):
                     scores = bboxes_prd[..., 4]
 
                     visualize_boxes(image=img, boxes=boxes, labels=class_inds, probs=scores, class_labels=self.__classes)
-                    path = os.path.join(cfg.PROJECT_PATH, "data/{}".format(v))
+                    path = os.path.join(cfg.PROJECT_PATH, "output/{}".format(v))
 
                     cv2.imwrite(path, img)
                     print("saved images : {}".format(path))
@@ -91,8 +92,8 @@ class Tester(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--weight_path', type=str, default='weight/best.pt', help='weight file path')
-    parser.add_argument('--visiual', type=str, default='./data/test', help='test data path or None')
-    parser.add_argument('--eval', action='store_true', default=True, help='eval the mAP or not')
+    parser.add_argument('--visiual', type=str, default='./test', help='test data path or None')
+    parser.add_argument('--eval', action='store_true', default=False, help='eval the mAP or not')
     parser.add_argument('--gpu_id', type=int, default=0, help='gpu id')
     opt = parser.parse_args()
 

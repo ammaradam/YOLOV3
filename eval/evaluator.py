@@ -11,13 +11,15 @@ import torch
 from utils.tools import *
 from tqdm import tqdm
 from utils.visualize import *
+import math
 
 
 class Evaluator(object):
     def __init__(self, model, visiual=True):
         self.classes = cfg.DATA["CLASSES"]
         self.pred_result_path = os.path.join(cfg.PROJECT_PATH, 'data', 'results')
-        self.val_data_path = os.path.join(cfg.DATA_PATH, 'VOCtest-2007', 'VOCdevkit', 'VOC2007')
+        # self.val_data_path = os.path.join(cfg.DATA_PATH, 'VOCtest-2007', 'VOCdevkit', 'VOC2007')
+        self.val_data_path = os.path.join(cfg.DATA_PATH)
         self.conf_thresh = cfg.TEST["CONF_THRESH"]
         self.nms_thresh = cfg.TEST["NMS_THRESH"]
         self.val_shape =  cfg.TEST["TEST_IMG_SIZE"]
@@ -29,17 +31,24 @@ class Evaluator(object):
         self.device = next(model.parameters()).device
 
     def APs_voc(self, multi_test=False, flip_test=False):
-        img_inds_file = os.path.join(self.val_data_path,  'ImageSets', 'Main', 'test.txt')
-        with open(img_inds_file, 'r') as f:
-            lines = f.readlines()
-            img_inds = [line.strip() for line in lines]
+        # img_inds_file = os.path.join(self.val_data_path,  'ImageSets', 'Main', 'test.txt')
+        # with open(img_inds_file, 'r') as f:
+        #     lines = f.readlines()
+        #     img_inds = [line.strip() for line in lines]
+
+        img_inds = [os.path.splitext(f)[0] for f in os.listdir(self.val_data_path) if f.endswith('.jpg')]
 
         if os.path.exists(self.pred_result_path):
             shutil.rmtree(self.pred_result_path)
         os.mkdir(self.pred_result_path)
 
+        # if not os.path.exists(self.pred_result_path):
+        #     os.mkdir(self.pred_result_path)
+
+
         for img_ind in tqdm(img_inds):
-            img_path = os.path.join(self.val_data_path, 'JPEGImages', img_ind+'.jpg')
+            # img_path = os.path.join(self.val_data_path, 'JPEGImages', img_ind+'.jpg')
+            img_path = os.path.join(self.val_data_path, img_ind + '.jpg')
             img = cv2.imread(img_path)
             bboxes_prd = self.get_bbox(img, multi_test, flip_test)
 
@@ -88,6 +97,25 @@ class Evaluator(object):
 
         return bboxes
 
+    def get_bbox_cleaned(self, img, multi_test=False, flip_test=False):
+        # bboxes = self.__predict(img, self.val_shape, (0, np.inf))
+        bboxes = self.__predict(img, self.val_shape, (0, math.inf))
+        
+        print(bboxes.shape)
+        print(type(bboxes))
+        print(self.conf_thresh)
+        print(self.nms_thresh)
+
+        # scores = bboxes[i, :,  4]
+        # keep_idx = scores >= self.conf_thresh
+        # boxes_ = boxes[i, keep_idx, :-1]
+        # scores = scores[keep_idx]
+        
+        bboxes = nms(bboxes, self.conf_thresh, self.nms_thresh)
+        # bboxes = torchvision.ops.nms(boxes, scores, self.nms_thresh)
+
+        return bboxes
+
     def __predict(self, img, test_shape, valid_scale):
         org_img = np.copy(img)
         org_h, org_w, _ = org_img.shape
@@ -96,9 +124,10 @@ class Evaluator(object):
         self.model.eval()
         with torch.no_grad():
             _, p_d = self.model(img)
-        pred_bbox = p_d.squeeze().cpu().numpy()
+        # pred_bbox = p_d.squeeze().cpu().numpy()
+        pred_bbox = p_d.squeeze().cpu()
+        print('type bboxes',type(pred_bbox))
         bboxes = self.__convert_pred(pred_bbox, test_shape, (org_h, org_w), valid_scale)
-
         return bboxes
 
     def __get_img_tensor(self, img, test_shape):
@@ -112,7 +141,9 @@ class Evaluator(object):
         """
         pred_coor = xywh2xyxy(pred_bbox[:, :4])
         pred_conf = pred_bbox[:, 4]
+        print('type pred_conf',type(pred_conf))
         pred_prob = pred_bbox[:, 5:]
+        print('type pred_prob',type(pred_prob))
 
         # (1)
         # (xmin_org, xmax_org) = ((xmin, xmax) - dw) / resize_ratio
@@ -127,6 +158,9 @@ class Evaluator(object):
         pred_coor[:, 1::2] = 1.0 * (pred_coor[:, 1::2] - dh) / resize_ratio
 
         # (2)将预测的bbox中超出原图的部分裁掉
+        # pred_coor = np.concatenate([np.maximum(pred_coor[:, :2], [0, 0]),
+        #                             np.minimum(pred_coor[:, 2:], [org_w - 1, org_h - 1])], axis=-1)
+        print('np max', torch.max(pred_coor[:, :2], torch.zeros(2)))
         pred_coor = np.concatenate([np.maximum(pred_coor[:, :2], [0, 0]),
                                     np.minimum(pred_coor[:, 2:], [org_w - 1, org_h - 1])], axis=-1)
         # (3)将无效bbox的coor置为0

@@ -70,13 +70,13 @@ class Yolov3(nn.Module):
                 torch.nn.init.normal_(m.weight.data, 0.0, 0.01)
                 if m.bias is not None:
                     m.bias.data.zero_()
-                print("initing {}".format(m))
+                # print("initing {}".format(m))
 
             elif isinstance(m, nn.BatchNorm2d):
                 torch.nn.init.constant_(m.weight.data, 1.0)
                 torch.nn.init.constant_(m.bias.data, 0.0)
 
-                print("initing {}".format(m))
+                # print("initing {}".format(m))
 
 
     def load_darknet_weights(self, weight_file, cutoff=52):
@@ -118,7 +118,7 @@ class Yolov3(nn.Module):
                     bn_layer.running_var.data.copy_(bn_rv)
                     ptr += num_b
 
-                    print("loading weight {}".format(bn_layer))
+                    # print("loading weight {}".format(bn_layer))
                 else:
                     # Load conv. bias
                     num_b = conv_layer.bias.numel()
@@ -131,7 +131,7 @@ class Yolov3(nn.Module):
                 conv_layer.weight.data.copy_(conv_w)
                 ptr += num_w
 
-                print("loading weight {}".format(conv_layer))
+                # print("loading weight {}".format(conv_layer))
 
 
 

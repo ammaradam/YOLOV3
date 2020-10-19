@@ -17,16 +17,27 @@ def parse_voc_annotation(data_path, file_type, anno_path, use_difficult_bbox=Fal
     :return: 数据集大小
     """
     classes = cfg.DATA["CLASSES"]
-    img_inds_file = os.path.join(data_path, 'ImageSets', 'Main', file_type+'.txt')
-    with open(img_inds_file, 'r') as f:
-        lines = f.readlines()
-        image_ids = [line.strip() for line in lines]
+    # img_inds_file = os.path.join(data_path, 'ImageSets', 'Main', file_type+'.txt')
+    # img_inds_file = os.path.join(data_path, 'label.txt')
+    # with open(img_inds_file, 'r') as f:
+    #     lines = f.readlines()
+    #     image_ids = [line.strip() for line in lines]
+    
+    image_ids = [os.path.splitext(f)[0] for f in os.listdir(data_path) if f.endswith('.jpg')]
 
+    print('anno_path', anno_path)
+
+    # with open(anno_path, 'a') as f:
+    #     f.writelines(image_ids)
+
+    annotation = ''
     with open(anno_path, 'a') as f:
         for image_id in tqdm(image_ids):
-            image_path = os.path.join(data_path, 'JPEGImages', image_id + '.jpg')
+            # image_path = os.path.join(data_path, 'JPEGImages', image_id + '.jpg')
+            image_path = os.path.join(data_path, image_id + '.jpg')
             annotation = image_path
-            label_path = os.path.join(data_path, 'Annotations', image_id + '.xml')
+            # label_path = os.path.join(data_path, 'Annotations', image_id + '.xml')
+            label_path = os.path.join(data_path, image_id +'.xml')
             root = ET.parse(label_path).getroot()
             objects = root.findall('object')
             for obj in objects:
@@ -34,7 +45,7 @@ def parse_voc_annotation(data_path, file_type, anno_path, use_difficult_bbox=Fal
                 if (not use_difficult_bbox) and (int(difficult) == 1): # difficult 表示是否容易识别，0表示容易，1表示困难
                     continue
                 bbox = obj.find('bndbox')
-                class_id = classes.index(obj.find("name").text.lower().strip())
+                class_id = classes.index(obj.find("name").text.upper().strip())
                 xmin = bbox.find('xmin').text.strip()
                 ymin = bbox.find('ymin').text.strip()
                 xmax = bbox.find('xmax').text.strip()
@@ -48,15 +59,18 @@ def parse_voc_annotation(data_path, file_type, anno_path, use_difficult_bbox=Fal
 
 if __name__ =="__main__":
     # train_set :  VOC2007_trainval 和 VOC2012_trainval
-    train_data_path_2007 = os.path.join(cfg.DATA_PATH, 'VOCtrainval-2007', 'VOCdevkit', 'VOC2007')
-    train_data_path_2012 = os.path.join(cfg.DATA_PATH, 'VOCtrainval-2012', 'VOCdevkit', 'VOC2012')
-    train_annotation_path = os.path.join('../data', 'train_annotation.txt')
+    # train_data_path_2007 = os.path.join(cfg.DATA_PATH, 'VOCtrainval-2007', 'VOCdevkit', 'VOC2007')
+    train_data_path_2007 = os.path.join(cfg.DATA_PATH)
+    # train_data_path_2012 = os.path.join(cfg.DATA_PATH, 'VOCtrainval-2012', 'VOCdevkit', 'VOC2012')
+    train_data_path_2012 = os.path.join(cfg.DATA_PATH)
+    train_annotation_path = os.path.join(cfg.DATA_PATH, 'train_annotation.txt')
     if os.path.exists(train_annotation_path):
         os.remove(train_annotation_path)
 
     # val_set   : VOC2007_test
-    test_data_path_2007 = os.path.join(cfg.DATA_PATH, 'VOCtest-2007', 'VOCdevkit', 'VOC2007')
-    test_annotation_path = os.path.join('../data', 'test_annotation.txt')
+    # test_data_path_2007 = os.path.join(cfg.DATA_PATH, 'VOCtest-2007', 'VOCdevkit', 'VOC2007')
+    test_data_path_2007 = os.path.join(cfg.DATA_PATH)
+    test_annotation_path = os.path.join(cfg.DATA_PATH, 'test_annotation.txt')
     if os.path.exists(test_annotation_path):
         os.remove(test_annotation_path)
 

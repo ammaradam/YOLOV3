@@ -89,7 +89,7 @@ class Trainer(object):
 
 
     def train(self):
-        print(self.yolov3)
+        # print(self.yolov3)
         print("Train datasets number is : {}".format(len(self.train_dataset)))
 
         for epoch in range(self.start_epoch, self.epochs):
